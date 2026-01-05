@@ -7,13 +7,14 @@ import CartScreen from '../screens/cartScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { useTheme } from '../hooks/useTheme';
 import { TabParamList } from '../data/types/navigation';
-import { selectCartItemCount } from '../slices/cartSlice';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
 const TabNavigator: React.FC = () => {
   const { colors } = useTheme();
-  const cartItemCount = useSelector(selectCartItemCount);
+  const cartItemCount = useSelector((state: any) => 
+    state.cart.items.reduce((total: number, item: any) => total + item.quantity, 0)
+  );
 
   return (
     <Tab.Navigator
