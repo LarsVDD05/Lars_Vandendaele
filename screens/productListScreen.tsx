@@ -22,7 +22,7 @@ import { selectCartItemCount } from '../slices/cartSlice';
 import { addToCart } from '../slices/cartSlice';
 import { toggleFavorite } from '../slices/favoritesSlice';
 import { Product } from '../data/types';
-import { HomeStackParamList } from '../data/types/navigation';
+import { HomeStackParamList, TabParamList } from '../data/types/navigation';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 
@@ -30,6 +30,7 @@ const ProductListScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 500);
   const navigation = useNavigation<NavigationProp>();
+  const tabNavigation = useNavigation<NativeStackNavigationProp<TabParamList>>();
   const dispatch = useDispatch();
   const { colors } = useTheme();
   
@@ -52,6 +53,10 @@ const ProductListScreen: React.FC = () => {
   } = useProducts(debouncedSearch);
 
   const products = data?.pages.flatMap(page => page.products) || [];
+
+  const handleCartPress = () => {
+    tabNavigation.navigate('Cart');
+  };
 
   const renderProductCard = ({ item }: { item: Product }) => {
     const favorite = isFavorite(item.id);
@@ -189,7 +194,10 @@ const ProductListScreen: React.FC = () => {
           )}
         </View>
         
-        <TouchableOpacity style={styles.cartContainer}>
+        <TouchableOpacity 
+          style={styles.cartContainer}
+          onPress={handleCartPress}
+        >
           <Ionicons name="cart" size={24} color={colors.primary} />
           {cartItemCount > 0 && (
             <View style={[styles.badge, { backgroundColor: colors.error }]}>

@@ -7,6 +7,7 @@ import {
   StyleSheet,
   FlatList,
   Image,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
@@ -16,6 +17,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '../hooks/useTheme';
 import { Product } from '../data/types';
 import { TabParamList, HomeStackParamList } from '../data/types/navigation';
+import { clearFavorites, toggleFavorite } from '../slices/favoritesSlice';
 
 type NavigationProp = NativeStackNavigationProp<TabParamList>;
 
@@ -45,20 +47,27 @@ const ProfileScreen: React.FC = () => {
   const handleClearFavorites = () => {
     if (favorites.length === 0) return;
     
-    if (window.confirm('Are you sure you want to clear all favorites?')) {
-      dispatch({ type: 'favorites/clearFavorites' });
-    }
+    Alert.alert(
+      'Clear Favorites',
+      'Are you sure you want to clear all favorites?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Clear All', 
+          style: 'destructive',
+          onPress: () => dispatch(clearFavorites())
+        },
+      ]
+    );
   };
 
   const handleProductPress = (productId: number) => {
     navigation.navigate('Home');
     
-    setTimeout(() => {
-      (navigation as any)?.navigate('HomeStack', { 
-        screen: 'ProductDetail', 
-        params: { productId } 
-      });
-    }, 100);
+    const rootNavigation = navigation.getParent();
+    if (rootNavigation) {
+      rootNavigation.navigate('ProductDetail', { productId });
+    }
   };
 
   const renderCartItem = ({ item }: { item: any }) => {
@@ -116,7 +125,7 @@ const ProfileScreen: React.FC = () => {
         
         <TouchableOpacity
           style={styles.removeFavoriteButton}
-          onPress={() => dispatch({ type: 'favorites/toggleFavorite', payload: item })}
+          onPress={() => dispatch(toggleFavorite(item))}
         >
           <Ionicons name="heart" size={20} color={colors.error} />
         </TouchableOpacity>
@@ -203,13 +212,24 @@ const ProfileScreen: React.FC = () => {
         <TouchableOpacity
           style={[
             styles.goToCartButton, 
-            { backgroundColor: cartItems.length > 0 ? colors.primary : colors.background }
+            { 
+              backgroundColor: cartItems.length > 0 ? colors.primary : colors.border,
+              borderWidth: cartItems.length === 0 ? 1 : 0,
+              borderColor: cartItems.length === 0 ? colors.border : 'transparent'
+            }
           ]}
           onPress={handleGoToCart}
           disabled={cartItems.length === 0}
         >
-          <Ionicons name="cart" size={22} color="#FFFFFF" />
-          <Text style={styles.goToCartButtonText}>
+          <Ionicons 
+            name="cart" 
+            size={22} 
+            color={cartItems.length > 0 ? "#FFFFFF" : colors.textSecondary} 
+          />
+          <Text style={[
+            styles.goToCartButtonText, 
+            { color: cartItems.length > 0 ? "#FFFFFF" : colors.textSecondary }
+          ]}>
             {cartItems.length > 0 ? 'Go to Cart' : 'Cart is Empty'}
           </Text>
           {cartItems.length > 0 && (
@@ -400,7 +420,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   goToCartButtonText: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
     flex: 1,
