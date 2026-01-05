@@ -16,6 +16,12 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '../hooks/useTheme';
 import { CartItem } from '../data/types';
 import { TabParamList } from '../data/types/navigation';
+import { 
+  increaseQuantity, 
+  decreaseQuantity, 
+  removeFromCart, 
+  clearCart 
+} from '../slices/cartSlice';
 
 type NavigationProp = NativeStackNavigationProp<TabParamList>;
 
@@ -33,25 +39,43 @@ const CartScreen: React.FC = () => {
   );
 
   const handleIncrease = (id: number) => {
-    dispatch({ type: 'cart/increaseQuantity', payload: id });
+    dispatch(increaseQuantity(id));
   };
 
   const handleDecrease = (id: number) => {
-    dispatch({ type: 'cart/decreaseQuantity', payload: id });
+    dispatch(decreaseQuantity(id));
   };
 
   const handleRemove = (id: number) => {
-    if (window.confirm('Are you sure you want to remove this item from your cart?')) {
-      dispatch({ type: 'cart/removeFromCart', payload: id });
-    }
+    Alert.alert(
+      'Remove Item',
+      'Are you sure you want to remove this item from your cart?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Remove', 
+          style: 'destructive',
+          onPress: () => dispatch(removeFromCart(id))
+        },
+      ]
+    );
   };
 
   const handleClearCart = () => {
     if (cartItems.length === 0) return;
     
-    if (window.confirm('Are you sure you want to remove all items from your cart?')) {
-      dispatch({ type: 'cart/clearCart' });
-    }
+    Alert.alert(
+      'Clear Cart',
+      'Are you sure you want to remove all items from your cart?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Clear All', 
+          style: 'destructive',
+          onPress: () => dispatch(clearCart())
+        },
+      ]
+    );
   };
 
   const handleContinueShopping = () => {
@@ -59,14 +83,20 @@ const CartScreen: React.FC = () => {
   };
 
   const handleCheckout = () => {
-    const confirmed = window.confirm(
-      `Proceed to checkout with ${itemCount} items (Total: €${subtotal.toFixed(2)})?`
+    Alert.alert(
+      'Checkout',
+      `Proceed to checkout with ${itemCount} items (Total: €${subtotal.toFixed(2)})?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Checkout', 
+          onPress: () => {
+            Alert.alert('Success', 'Thank you for your purchase!');
+            dispatch(clearCart());
+          }
+        },
+      ]
     );
-    
-    if (confirmed) {
-      alert('Success\nThank you for your purchase!');
-      dispatch({ type: 'cart/clearCart' });
-    }
   };
 
   const renderCartItem = ({ item }: { item: CartItem }) => {
