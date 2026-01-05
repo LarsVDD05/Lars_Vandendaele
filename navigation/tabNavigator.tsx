@@ -1,16 +1,19 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
 import HomeStack from './homeStack';
 import CartScreen from '../screens/cartScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { useTheme } from '../hooks/useTheme';
 import { TabParamList } from '../data/types/navigation';
+import { selectCartItemCount } from '../slices/cartSlice';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
 const TabNavigator: React.FC = () => {
   const { colors } = useTheme();
+  const cartItemCount = useSelector(selectCartItemCount);
 
   return (
     <Tab.Navigator
@@ -55,14 +58,20 @@ const TabNavigator: React.FC = () => {
         name="Cart" 
         component={CartScreen}
         options={{ 
-          title: 'Winkelwagen'
+          title: 'Cart',
+          tabBarBadge: cartItemCount > 0 ? cartItemCount : undefined,
+          tabBarBadgeStyle: {
+            backgroundColor: colors.error,
+            color: '#FFFFFF',
+            fontSize: 12,
+          }
         }}
       />
       <Tab.Screen 
         name="Profile" 
         component={ProfileScreen}
         options={{ 
-          title: 'Profiel'
+          title: 'Profile'
         }}
       />
     </Tab.Navigator>
